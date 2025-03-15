@@ -1,0 +1,17 @@
+{
+  "name": "mcp-server",
+  "version": "1.0.0",
+  "description": "Model Context Protocol server for n8n integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@anthropic-ai/model-context-protocol": "^0.5.0",
+    "axios": "^1.6.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

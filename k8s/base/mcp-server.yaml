@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-server
+  namespace: n8n
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: mcp-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-server
+  namespace: n8n
+spec:
+  selector:
+    matchLabels:
+      app: mcp-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mcp-server
+    spec:
+      containers:
+        - name: mcp-server
+          image: your-registry/mcp-server:latest # Replace with your MCP server image
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MCP_SERVER_PORT
+              value: "3000"
+            - name: MCP_SERVER_LOG_LEVEL
+              value: "info"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
