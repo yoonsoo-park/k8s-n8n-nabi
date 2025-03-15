@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: mcp-server
-          image: your-registry/mcp-server:latest # Replace with your MCP server image
+          image: your-registry/mcp-server:latest # TODO: Replace with your MCP server image
           ports:
             - containerPort: 3000
           env:
