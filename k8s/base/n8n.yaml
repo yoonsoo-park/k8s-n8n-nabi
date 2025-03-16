@@ -68,7 +68,7 @@ spec:
             - name: N8N_COMMUNITY_NODES
               value: "n8n-nodes-mcp"
             - name: MCP_SERVER_URL
-              value: "http://mcp-server:3000"
+              value: "http://mcp-server:1991"
             - name: N8N_AI_ENABLED
               value: "true"
           ports:

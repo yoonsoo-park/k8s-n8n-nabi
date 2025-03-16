@@ -1,6 +1,6 @@
 # MCP Server for n8n Integration
 
-This directory contains the source code for the Model Context Protocol (MCP) server that integrates with n8n.
+This directory contains the source code for the Model Context Protocol (MCP) server that integrates with n8n. It uses FastMCP and TypeScript.
 
 ## Overview
 
@@ -11,7 +11,8 @@ The MCP server provides a standardized interface for AI agents to interact with 
 The MCP server comes with the following tools:
 
 - **HTTP Request Tool**: Makes HTTP requests to external APIs
-- Add more tools by creating JavaScript files in the `tools/` directory
+- **n8n List Workflows Tool**: Lists all workflows from the n8n instance
+- Add more tools by creating TypeScript files in the `src/tools/` directory
 
 ## Setup Instructions
 
@@ -24,10 +25,24 @@ The MCP server comes with the following tools:
    npm install
    ```
 
-2. Run the server:
+2. Build the TypeScript code:
+
+   ```bash
+   npm run build
+   ```
+
+3. Run the server:
    ```bash
    npm start
    ```
+
+### Development with FastMCP CLI
+
+You can use the FastMCP CLI for development and testing:
+
+```bash
+npm run dev
+```
 
 ### Building the Docker Image
 
@@ -49,13 +64,41 @@ The MCP server is designed to work with n8n via the n8n-nodes-mcp community node
 
 To add a new tool:
 
-1. Create a new JavaScript file in the `tools/` directory
-2. Define the tool using the MCP protocol format (see `tools/http-request.js` for an example)
-3. Export the tool using `module.exports = { tool }`
+1. Create a new TypeScript file in the `src/tools/` directory
+2. Define the tool using the FastMCP format with Zod for parameter validation
+3. Export the tool as the default export
+
+Example:
+
+```typescript
+import { z } from "zod";
+
+const myTool = {
+  name: "my_tool",
+  description: "Description of my tool",
+  parameters: z.object({
+    param1: z.string().describe("Description of parameter 1"),
+    param2: z.number().optional().describe("Description of parameter 2"),
+  }),
+  execute: async (params) => {
+    // Tool implementation
+    return JSON.stringify({
+      result: "Success",
+      // More result data
+    });
+  },
+};
+
+export default myTool;
+```
 
 ## Environment Variables
 
 The MCP server supports the following environment variables:
 
-- `MCP_SERVER_PORT`: Port to run the server on (default: 3000)
-- `MCP_SERVER_LOG_LEVEL`: Logging level (default: info)
+- `MCP_SERVER_PORT`: Port to run the server on (default: 1991)
+- `MCP_TRANSPORT_TYPE`: Transport type for the MCP server (default: stdio)
+- `MCP_SSE_ENABLED`: Enable SSE transport (default: false)
+- `MCP_SSE_ENDPOINT`: SSE endpoint path (default: /sse)
+- `N8N_BASE_URL`: Base URL for n8n API (default: http://n8n:5678/api/v1)
+- `N8N_API_KEY`: API key for n8n

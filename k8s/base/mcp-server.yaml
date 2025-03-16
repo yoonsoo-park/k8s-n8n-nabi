@@ -6,8 +6,8 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - port: 3000
-      targetPort: 3000
+    - port: 1991
+      targetPort: 1991
   selector:
     app: mcp-server
 ---
@@ -30,10 +30,10 @@ spec:
         - name: mcp-server
           image: your-registry/mcp-server:latest # TODO: Replace with your MCP server image
           ports:
-            - containerPort: 3000
+            - containerPort: 1991
           env:
             - name: MCP_SERVER_PORT
-              value: "3000"
+              value: "1991"
             - name: MCP_SERVER_LOG_LEVEL
               value: "info"
           resources:

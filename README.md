@@ -183,13 +183,13 @@ n8n is a popular open-source workflow automation tool. By integrating it with MC
 2. Start the containers using Docker Compose:
 
    ```bash
-   docker-compose up -d
+   docker-compose up --scale n8n-worker=2
    ```
 
    This will start:
 
    - n8n on http://localhost:5678
-   - MCP server on http://localhost:3000
+   - MCP server on http://localhost:1991
 
 3. Wait for both services to start up (usually takes about 30 seconds)
 
@@ -220,7 +220,7 @@ The script will attempt to list all workflows from n8n via the MCP server and di
 You can also test the MCP server directly using curl:
 
 ```bash
-curl -X POST http://localhost:3000/mcp \
+curl -X POST http://localhost:1991/mcp \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",

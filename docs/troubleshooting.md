@@ -46,7 +46,7 @@ If n8n is running but cannot connect to the MCP server:
 2. Check network connectivity:
 
    ```bash
-   kubectl exec -it $(kubectl get pod -l app=n8n -n n8n -o jsonpath='{.items[0].metadata.name}') -n n8n -- curl -v http://mcp-server:3000
+   kubectl exec -it $(kubectl get pod -l app=n8n -n n8n -o jsonpath='{.items[0].metadata.name}') -n n8n -- curl -v http://mcp-server:1991
    ```
 
 3. Verify environment variables in n8n:
@@ -94,11 +94,11 @@ If MCP tools are not appearing in n8n:
 
 3. Test the MCP server directly:
    ```bash
-   kubectl port-forward svc/mcp-server 3000:3000 -n n8n
+   kubectl port-forward svc/mcp-server 1991:1991 -n n8n
    ```
    Then in another terminal:
    ```bash
-   curl -X POST http://localhost:3000/jsonrpc -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":1,"method":"toolList","params":{}}'
+   curl -X POST http://localhost:1991/jsonrpc -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":1,"method":"toolList","params":{}}'
    ```
 
 ## AWS and Kubernetes Issues

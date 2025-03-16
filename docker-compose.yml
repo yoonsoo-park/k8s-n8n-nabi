@@ -1,5 +1,24 @@
-version: "3.8"
 services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=n8n
+      - POSTGRES_PASSWORD=yopa-test-password
+      - POSTGRES_DB=n8n
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mcp-n8n-network
+    restart: always
+
+  redis:
+    image: redis:latest
+    volumes:
+      - redis_data:/data
+    networks:
+      - mcp-n8n-network
+    restart: always
+
   n8n:
     image: n8nio/n8n:latest
     ports:
@@ -8,10 +27,50 @@ services:
       - N8N_HOST=0.0.0.0
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
-      # Generate a random API key for n8n - change this to something secure in production
       - N8N_API_KEY=yopa-test-api-key
-    volumes:
-      - n8n_data:/home/node/.n8n
+      - N8N_ENCRYPTION_KEY=yopa-test-encryption-key
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=n8n
+      - DB_POSTGRESDB_USER=n8n
+      - DB_POSTGRESDB_PASSWORD=yopa-test-password
+      - EXECUTIONS_MODE=queue
+      - QUEUE_BULL_REDIS_HOST=redis
+      - QUEUE_BULL_REDIS_PORT=6379
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_RUNNERS_ENABLED=true
+      - OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - mcp-n8n-network
+    restart: always
+
+  n8n-worker:
+    image: n8nio/n8n:latest
+    command: worker
+    environment:
+      - N8N_ENCRYPTION_KEY=yopa-test-encryption-key
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=n8n
+      - DB_POSTGRESDB_USER=n8n
+      - DB_POSTGRESDB_PASSWORD=yopa-test-password
+      - EXECUTIONS_MODE=queue
+      - QUEUE_BULL_REDIS_HOST=redis
+      - QUEUE_BULL_REDIS_PORT=6379
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_RUNNERS_ENABLED=true
+      - OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    depends_on:
+      - postgres
+      - redis
+      - n8n
     networks:
       - mcp-n8n-network
     restart: always
@@ -20,16 +79,19 @@ services:
     build:
       context: ./mcp-server
     ports:
-      - "3000:3000"
+      - "1991:1991"
     environment:
-      - MCP_SERVER_PORT=3000
+      - MCP_SERVER_PORT=1991
       - MCP_SERVER_LOG_LEVEL=debug
       - N8N_BASE_URL=http://n8n:5678/api/v1
       - N8N_API_KEY=yopa-test-api-key
-    networks:
-      - mcp-n8n-network
+      - NODE_ENV=production
+      - MCP_TRANSPORT_TYPE=sse
+      - MCP_SSE_ENABLED=true
     depends_on:
       - n8n
+    networks:
+      - mcp-n8n-network
     restart: always
 
 networks:
@@ -37,4 +99,5 @@ networks:
     driver: bridge
 
 volumes:
-  n8n_data:
+  postgres_data:
+  redis_data:

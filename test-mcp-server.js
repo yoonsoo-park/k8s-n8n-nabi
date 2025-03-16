@@ -6,7 +6,7 @@ async function testMcpServer() {
     console.log("Testing MCP server connection...");
 
     // Make a JSON-RPC request to the MCP server
-    const response = await axios.post("http://localhost:3000/mcp", {
+    const response = await axios.post("http://localhost:1991/mcp", {
       jsonrpc: "2.0",
       id: "1",
       method: "tool",
