@@ -151,3 +151,137 @@ For common issues and solutions, see the [troubleshooting guide](docs/troublesho
 - [n8n Documentation](https://docs.n8n.io/)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 - [AWS EKS Documentation](https://docs.aws.amazon.com/eks/)
+
+# n8n MCP Server
+
+This repository contains an implementation of a Model Context Protocol (MCP) server that integrates with n8n. The MCP server allows AI systems (like Claude) to discover and use n8n workflows as "tools".
+
+## What is MCP?
+
+Model Context Protocol (MCP) is an open standard that lets AI systems (LLMs) discover and use external tools and data via a unified interface. An MCP server exposes a set of "tools" (functions or actions) that an AI can invoke.
+
+## What is n8n?
+
+n8n is a popular open-source workflow automation tool. By integrating it with MCP, an AI agent can trigger n8n workflows or manage them using natural language.
+
+## Local Development Setup
+
+### Prerequisites
+
+- Docker and Docker Compose installed
+- Node.js 18+ (for running the test script outside Docker)
+
+### Running the MCP Server with n8n
+
+1. Clone this repository:
+
+   ```bash
+   git clone https://github.com/yourusername/n8n-nabi.git
+   cd n8n-nabi
+   ```
+
+2. Start the containers using Docker Compose:
+
+   ```bash
+   docker-compose up -d
+   ```
+
+   This will start:
+
+   - n8n on http://localhost:5678
+   - MCP server on http://localhost:3000
+
+3. Wait for both services to start up (usually takes about 30 seconds)
+
+4. Access n8n at http://localhost:5678 and create a simple workflow to test with.
+
+### Testing the MCP Server
+
+There are two ways to test the MCP server:
+
+#### Option 1: Using the test script
+
+Install dependencies for the test script:
+
+```bash
+npm install axios
+```
+
+Run the test script:
+
+```bash
+node test-mcp-server.js
+```
+
+The script will attempt to list all workflows from n8n via the MCP server and display the results.
+
+#### Option 2: Using curl
+
+You can also test the MCP server directly using curl:
+
+```bash
+curl -X POST http://localhost:3000/mcp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "tool",
+    "params": {
+      "name": "n8n_list_workflows",
+      "parameters": {}
+    }
+  }'
+```
+
+## Available MCP Tools
+
+The MCP server currently provides the following tools:
+
+### n8n_list_workflows
+
+Lists all workflows available in n8n.
+
+Parameters:
+
+- `active` (optional, boolean): Filter workflows by active status
+
+Example:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "method": "tool",
+  "params": {
+    "name": "n8n_list_workflows",
+    "parameters": {
+      "active": true
+    }
+  }
+}
+```
+
+### http_request
+
+Makes HTTP requests to external APIs. This tool is useful for testing general HTTP connectivity.
+
+Parameters:
+
+- `method` (required, string): The HTTP method to use (GET, POST, PUT, DELETE)
+- `url` (required, string): The URL to send the request to
+- `headers` (optional, object): HTTP headers to include in the request
+- `data` (optional, object): Data to send in the request body (for POST/PUT)
+
+## Shutting Down
+
+To stop the containers:
+
+```bash
+docker-compose down
+```
+
+To stop and remove all data:
+
+```bash
+docker-compose down -v
+```

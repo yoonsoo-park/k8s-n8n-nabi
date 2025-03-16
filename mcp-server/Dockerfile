@@ -5,21 +5,16 @@ WORKDIR /app
 # Install necessary dependencies
 RUN apk add --no-cache python3 make g++ git
 
-# Clone MCP server quickstart repository or use your company's internal npm package
-# Option 1: Using the MCP quickstart
-RUN git clone https://github.com/anthropics/anthropic-cookbook.git /tmp/anthropic-cookbook
-WORKDIR /tmp/anthropic-cookbook/tools/mcp/quickstart_server
+# Copy package.json and install dependencies
+COPY package.json .
 RUN npm install
 
-# Option 2: If using your company's internal npm package (uncomment and adapt)
-# COPY package.json .
-# RUN npm install @ncino/cli
-# RUN npm install
+# Copy server code and tools
+COPY server.js .
+COPY tools/ ./tools/
 
-# Copy your MCP server configuration and tool definitions
-COPY tools/ /app/tools/
-COPY server.js /app/
-
+# Expose the MCP server port
 EXPOSE 3000
 
+# Start the MCP server
 CMD ["node", "server.js"] 

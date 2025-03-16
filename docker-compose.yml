@@ -1,0 +1,40 @@
+version: "3.8"
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      # Generate a random API key for n8n - change this to something secure in production
+      - N8N_API_KEY=yopa-test-api-key
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - mcp-n8n-network
+    restart: always
+
+  mcp-server:
+    build:
+      context: ./mcp-server
+    ports:
+      - "3000:3000"
+    environment:
+      - MCP_SERVER_PORT=3000
+      - MCP_SERVER_LOG_LEVEL=debug
+      - N8N_BASE_URL=http://n8n:5678/api/v1
+      - N8N_API_KEY=yopa-test-api-key
+    networks:
+      - mcp-n8n-network
+    depends_on:
+      - n8n
+    restart: always
+
+networks:
+  mcp-n8n-network:
+    driver: bridge
+
+volumes:
+  n8n_data:
