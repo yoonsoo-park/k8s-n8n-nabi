@@ -80,6 +80,7 @@ services:
       context: ./mcp-server
     ports:
       - "1991:1991"
+      - "1992:1992"
     environment:
       - MCP_SERVER_PORT=1991
       - MCP_SERVER_LOG_LEVEL=debug
