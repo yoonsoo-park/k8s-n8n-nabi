@@ -26,10 +26,13 @@ RUN echo "Contents of dist/tools directory (if exists):" && ls -la dist/tools ||
 # Ensure tools directory exists in dist
 RUN mkdir -p dist/tools
 
-# Copy ONLY compiled JavaScript tools to dist/tools
-RUN find src/tools -name "*.js" -exec cp -v {} dist/tools/ \; || echo "No compiled JS tools found in src/tools"
-RUN echo "Copying compiled JS tools from dist/tools (if they exist)..."
-RUN find dist/tools -name "*.js" -exec ls -la {} \; || echo "No JS tools found in dist/tools"
+# The TypeScript compiler might already put the compiled tools in dist/tools,
+# but let's make sure by copying them explicitly
+RUN echo "Copying compiled JS tools from dist directory..."
+RUN cp -v dist/tools/*.js dist/tools/ 2>/dev/null || echo "No JS files found in dist/tools (expected from build)"
+
+# Also try to find and copy any tool files that might be in a different location
+RUN find dist -name "http-request.js" -o -name "n8n-list-workflows.js" -exec cp -v {} dist/tools/ \; || echo "No tool JS files found elsewhere in dist"
 
 # Make sure we only have JS files in dist/tools (remove any TS files that might have been copied)
 RUN find dist/tools -name "*.ts" -delete || echo "No TS files to remove"
@@ -48,12 +51,6 @@ RUN echo "Source directory contents:" && \
     ls -la src/tools/ && \
     echo "Dist directory contents:" && \
     ls -la dist/ || echo "dist directory not found"
-
-# Create tools directory and copy tool files
-RUN mkdir -p dist/tools && \
-    cp -r src/tools/*.ts dist/tools/ && \
-    echo "Copied TypeScript tools" && \
-    ls -la dist/tools/
 
 # Expose the MCP server port
 EXPOSE 1991

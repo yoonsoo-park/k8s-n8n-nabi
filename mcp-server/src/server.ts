@@ -51,6 +51,8 @@ const loadTools = async () => {
       ];
 
       console.log("Searching for tools in alternative locations:");
+      let successfullyLoadedTools = 0;
+
       for (const testPath of possiblePaths) {
         console.log(`Checking ${testPath}...`);
         if (fs.existsSync(testPath)) {
@@ -69,12 +71,18 @@ const loadTools = async () => {
               const toolModule = await import(path.join(testPath, file));
               server.addTool(toolModule.default);
               console.log(`Successfully loaded tool from ${file}`);
+              successfullyLoadedTools++;
             } catch (err) {
               console.error(`Failed to load tool ${file}:`, err);
             }
           }
         }
       }
+
+      // Log the count from our reliable counter
+      console.log(
+        `Loaded ${successfullyLoadedTools} tools successfully from fallback locations`
+      );
       return;
     }
 
@@ -103,6 +111,9 @@ const loadTools = async () => {
       `Found ${toolFiles.length} tool files: ${toolFiles.join(", ")}`
     );
 
+    // Count tools loaded in a more reliable way by keeping track of successful additions
+    let successfullyLoadedTools = 0;
+
     // Import each tool
     for (const file of toolFiles) {
       try {
@@ -117,22 +128,78 @@ const loadTools = async () => {
           if (toolModule.tool) {
             server.addTool(toolModule.tool);
             console.log(`Added tool from module.tool in ${file}`);
+            successfullyLoadedTools++;
           } else {
             console.error(`No tool found in ${file}`);
           }
         } else {
           server.addTool(toolModule.default);
           console.log(`Added tool from default export in ${file}`);
+          successfullyLoadedTools++;
         }
       } catch (err) {
         console.error(`Error importing tool from ${file}:`, err);
       }
     }
 
-    // Count tools loaded using the server's internal methods
-    // @ts-ignore -- FastMCP has an internal tools property that TypeScript doesn't know about
-    const toolCount = server.tools ? Object.keys(server.tools).length : 0;
-    console.log(`Loaded ${toolCount} tools successfully`);
+    // Log the count from our reliable counter
+    console.log(`Loaded ${successfullyLoadedTools} tools successfully`);
+
+    // Inspect server object to better understand the structure
+    console.log("Server keys:", Object.keys(server));
+
+    // Check a few common properties where tools might be stored
+    if (successfullyLoadedTools > 0) {
+      console.log(
+        "Tools were successfully added but may not be correctly stored in FastMCP"
+      );
+
+      // Try different properties where tools might be stored
+      const serverAny = server as any;
+
+      if (serverAny._tools) {
+        console.log(
+          `Found ${Object.keys(serverAny._tools).length} tools in server._tools`
+        );
+      }
+
+      if (serverAny.tools) {
+        console.log(
+          `Found ${Object.keys(serverAny.tools).length} tools in server.tools`
+        );
+      }
+
+      // Log the entire server object (non-recursive) to help debug
+      console.log(
+        "Server object (non-recursive):",
+        Object.fromEntries(
+          Object.entries(serverAny)
+            .filter(([key]) => !key.startsWith("_"))
+            .map(([key, value]) => [key, typeof value])
+        )
+      );
+    }
+
+    // Attempt to verify tools using FastMCP's method if available
+    try {
+      // @ts-ignore
+      if (server.getTools && typeof server.getTools === "function") {
+        // @ts-ignore
+        const serverTools = server.getTools();
+        console.log(
+          `Server reports ${Object.keys(serverTools).length} tools available`
+        );
+      } else {
+        // Attempt alternative checks
+        // @ts-ignore
+        const toolCount = server.tools ? Object.keys(server.tools).length : 0;
+        if (toolCount > 0) {
+          console.log(`Verified ${toolCount} tools from server.tools property`);
+        }
+      }
+    } catch (error) {
+      console.log("Note: Could not verify tool count using FastMCP methods");
+    }
   } catch (error) {
     console.error("Error loading tools:", error);
   }
