@@ -24,10 +24,10 @@ services:
     ports:
       - "5678:5678"
     environment:
-      - N8N_HOST=0.0.0.0
+      - N8N_HOST=localhost
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
-      - N8N_API_KEY=yopa-test-api-key
+      - N8N_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmY2MwOTI5Zi1kNjQ2LTRkMTMtODgzZi1lNjY3NTk3MDA3NWYiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzQyMTc1Njk2fQ.E39KyK7AyKJkl9eNlSHxHVSQ-K5UiFyw9RH_DI1KDbU
       - N8N_ENCRYPTION_KEY=yopa-test-encryption-key
       - DB_TYPE=postgresdb
       - DB_POSTGRESDB_HOST=postgres
@@ -85,7 +85,7 @@ services:
       - MCP_SERVER_PORT=1991
       - MCP_SERVER_LOG_LEVEL=debug
       - N8N_BASE_URL=http://n8n:5678/api/v1
-      - N8N_API_KEY=yopa-test-api-key
+      - N8N_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmY2MwOTI5Zi1kNjQ2LTRkMTMtODgzZi1lNjY3NTk3MDA3NWYiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzQyMTc1Njk2fQ.E39KyK7AyKJkl9eNlSHxHVSQ-K5UiFyw9RH_DI1KDbU
       - NODE_ENV=production
       - MCP_TRANSPORT_TYPE=sse
       - MCP_SSE_ENABLED=true
