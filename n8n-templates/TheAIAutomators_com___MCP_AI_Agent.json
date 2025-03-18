@@ -1,0 +1,1109 @@
+{
+  "name": "TheAIAutomators.com - MCP AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1520,
+        120
+      ],
+      "id": "173ef0df-f33c-49b4-8e62-fc53410d9f63",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZOpj5TOQEHDUyvZz",
+          "name": "OpenAi account 2 (AW)"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        100
+      ],
+      "id": "e7b4641b-157f-4c96-917d-456136363b4f",
+      "name": "List Tools for Brave Search",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "o8xdcSGhL0YSlG7v",
+          "name": "MCP Brave Search"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeTool",
+        "toolName": "={{ $fromAI(\"tool_name\",\"Populate this with the specific tool name\")}}",
+        "toolParameters": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tool_Parameters', ``, 'json') }}"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        -920,
+        100
+      ],
+      "id": "04df47a8-1894-4dbb-83c3-25f77255dd91",
+      "name": "Execute Tool for Brave Search",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "o8xdcSGhL0YSlG7v",
+          "name": "MCP Brave Search"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -280,
+        -520
+      ],
+      "id": "0a11eb39-593a-4b5d-8af2-795b491b1793",
+      "name": "When chat message received",
+      "webhookId": "3f885d7a-8f5b-4ccc-9d58-020278f7df84"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1360,
+        100
+      ],
+      "id": "24dfa449-6a80-4ba8-b043-a125e0aa104c",
+      "name": "Window Buffer Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -1320,
+        -180
+      ],
+      "id": "e65ff093-a72c-44cf-84f4-6d553b9d7f80",
+      "name": "MCP Search Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -280,
+        100
+      ],
+      "id": "44b43f31-9029-4f5c-b1a8-d2d46db2967a",
+      "name": "Window Buffer Memory1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -340,
+        -180
+      ],
+      "id": "133fe332-029c-460b-8c80-4c1a732ad251",
+      "name": "MCP Scraping Agent"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        100
+      ],
+      "id": "f9154288-a496-4c69-9728-5938c4d142b0",
+      "name": "List Tools for Firecrawl",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "YGnSvGz1oqi9ywNY",
+          "name": "MCP Firecrawl"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeTool",
+        "toolName": "={{ $fromAI(\"tool_name\",\"Populate this with the specific tool name\")}}",
+        "toolParameters": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tool_Parameters', ``, 'json') }}"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        60,
+        100
+      ],
+      "id": "945b6ba2-6fed-4c11-a294-bbf6fa1f305d",
+      "name": "Execute Tool for Firecrawl",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "YGnSvGz1oqi9ywNY",
+          "name": "MCP Firecrawl"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        220,
+        960
+      ],
+      "id": "a1e542dc-bbc6-4956-94e1-507d659a5a3b",
+      "name": "Window Buffer Memory2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        260,
+        680
+      ],
+      "id": "fb9c49b5-3eb1-48a0-8ca0-af5c67931afe",
+      "name": "MCP Puppeteer Agent"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        460,
+        960
+      ],
+      "id": "7ad7ad38-efd2-4a45-9126-df1c16d47510",
+      "name": "List Tools for Puppeteer",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "8w8dhxxNg1a2BjVQ",
+          "name": "MCP Puppeteer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeTool",
+        "toolName": "={{ $fromAI(\"tool_name\",\"Populate this with the specific tool name\")}}",
+        "toolParameters": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tool_Parameters', ``, 'json') }}"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        660,
+        960
+      ],
+      "id": "515d02f6-a92c-4b69-b868-97d16d2db6b1",
+      "name": "Execute Tool for Puppeteer",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "8w8dhxxNg1a2BjVQ",
+          "name": "MCP Puppeteer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "listResources"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        840,
+        960
+      ],
+      "id": "28b2ce51-c337-467e-b939-cc2fedd33875",
+      "name": "List Resources for Puppeteer",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "8w8dhxxNg1a2BjVQ",
+          "name": "MCP Puppeteer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://actors-mcp-server.apify.actor?token={{ $('Apify API Key').item.json.apifyAPpiKey }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -560,
+        740
+      ],
+      "id": "6175661a-bf51-4a43-8ffe-52e1beceb23f",
+      "name": "Start Apify MCP Server"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        740
+      ],
+      "id": "d5cde5e7-acc1-4f7d-9853-5b0580b25063",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1160,
+        1580
+      ],
+      "id": "2bac11a0-3f14-45ba-a3fe-2ba973e56127",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZOpj5TOQEHDUyvZz",
+          "name": "OpenAi account 2 (AW)"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -980,
+        1580
+      ],
+      "id": "77bc766c-fd77-4913-b8eb-6d665c187708",
+      "name": "Window Buffer Memory3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -900,
+        1260
+      ],
+      "id": "6a383715-9b25-4acc-8eeb-62f56991a927",
+      "name": "MCP Apify Agent"
+    },
+    {
+      "parameters": {
+        "connectionType": "sse"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        -780,
+        1580
+      ],
+      "id": "84023945-1d10-4378-8137-ba0e3bda73dc",
+      "name": "List Tools for Apify",
+      "credentials": {
+        "mcpClientSseApi": {
+          "id": "2Rm2X0RisT3C5dpm",
+          "name": "MCP Apify"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeTool",
+        "toolName": "={{ $fromAI(\"tool_name\",\"Populate this with the specific tool name\")}}",
+        "toolParameters": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tool_Parameters', ``, 'json') }}"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        -540,
+        1580
+      ],
+      "id": "47c0c6a8-af72-493e-aeb2-b0c9876ab5b4",
+      "name": "Execute Tool for Apify",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "8w8dhxxNg1a2BjVQ",
+          "name": "MCP Puppeteer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "35ab17a4-f89e-42d4-a9c7-10123a01a2be",
+              "name": "apifyAPpiKey",
+              "value": "apify_api_hwzQir7y0HGdlF7jJzC6FtbaK3UKhY1zJNkw",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -820,
+        740
+      ],
+      "id": "54d6144c-7db8-4ed9-8a23-2daf4c018154",
+      "name": "Apify API Key"
+    },
+    {
+      "parameters": {
+        "connectionType": "sse"
+      },
+      "type": "n8n-nodes-mcp.mcpClient",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        1040
+      ],
+      "id": "00c0cb3b-8607-43d8-854f-09d3a3b1cd0f",
+      "name": "MCP Client1",
+      "credentials": {
+        "mcpClientSseApi": {
+          "id": "2Rm2X0RisT3C5dpm",
+          "name": "MCP Apify"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://actors-mcp-server.apify.actor/message?token=apify_api_hwzQir7y0HGdlF7jJzC6FtbaK3UKhY1zJNkw",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"arguments\": { \"searchStringsArray\": [\"restaurants in San Francisco\"], \"maxCrawledPlacesPerSearch\": 3 },\n    \"name\": \"lukaskrivka/google-maps-with-contact-details\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -960,
+        1040
+      ],
+      "id": "fdcbda05-cf9c-44f4-9c5a-ca4331add59d",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "content": "## MCP Puppeteer Agent",
+        "height": 560,
+        "width": 1100,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        580
+      ],
+      "id": "07bd6067-afbe-4b0d-98ad-59a527982446",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -440,
+        100
+      ],
+      "id": "b4ed7b37-7ccc-4901-baca-2e0f730565e0",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZOpj5TOQEHDUyvZz",
+          "name": "OpenAi account 2 (AW)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        60,
+        960
+      ],
+      "id": "722bdff3-0c9b-44b7-947b-85cbdd57fba6",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZOpj5TOQEHDUyvZz",
+          "name": "OpenAi account 2 (AW)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## MCP Apify Agent",
+        "height": 1220,
+        "width": 960,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1240,
+        600
+      ],
+      "id": "9793daf6-1eda-4a03-a80b-a0c84814c374",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        600,
+        100
+      ],
+      "id": "cb0fadce-4f21-473b-b637-431ae97b7533",
+      "name": "Window Buffer Memory4"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        100
+      ],
+      "id": "9968896a-44c0-478a-8187-f1f21635090b",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZOpj5TOQEHDUyvZz",
+          "name": "OpenAi account 2 (AW)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        640,
+        -180
+      ],
+      "id": "b4f51e52-f649-4722-961e-29c4501e7ae8",
+      "name": "MCP Github Agent"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        840,
+        100
+      ],
+      "id": "9b54ceb8-1c30-421d-8ec9-3a1714232215",
+      "name": "List Tools for Github",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "d56XQjytBDuuQefl",
+          "name": "MCP Github"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "listResources"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        100
+      ],
+      "id": "9695f9a0-748d-48b7-af0b-840c9f072937",
+      "name": "List Resources for Github",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "8w8dhxxNg1a2BjVQ",
+          "name": "MCP Puppeteer"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -1080
+      ],
+      "id": "232402e6-0fa7-4eb5-86aa-4dc4360a5afc",
+      "name": "List Tools for Google Calendar",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "o8xdcSGhL0YSlG7v",
+          "name": "MCP Brave Search"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeTool",
+        "toolName": "={{ $fromAI(\"tool_name\",\"Populate this with the specific tool name\")}}",
+        "toolParameters": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tool_Parameters', ``, 'json') }}"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        -1080
+      ],
+      "id": "84d461f1-e2ea-4b53-9414-716e893c29a8",
+      "name": "Execute Tool for Google Calendar",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "o8xdcSGhL0YSlG7v",
+          "name": "MCP Brave Search"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "connectionType": "sse",
+        "operation": "listPrompts"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        120,
+        -1080
+      ],
+      "id": "464eab9e-d636-489b-b2f7-fe13c8635f71",
+      "name": "List Prompts for Google Calendar",
+      "credentials": {
+        "mcpClientSseApi": {
+          "id": "2Rm2X0RisT3C5dpm",
+          "name": "MCP Apify"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "connectionType": "sse",
+        "operation": "listResources"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        360,
+        -1080
+      ],
+      "id": "624214e6-d811-4a65-a860-883e5b754763",
+      "name": "List Resources for Google Calendar",
+      "credentials": {
+        "mcpClientSseApi": {
+          "id": "2Rm2X0RisT3C5dpm",
+          "name": "MCP Apify"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "connectionType": "sse",
+        "operation": "readResource",
+        "resourceUri": "s"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        520,
+        -1080
+      ],
+      "id": "7a7f409a-3590-4c61-8a7b-bab04fdbbdf7",
+      "name": "Get Resource",
+      "credentials": {
+        "mcpClientSseApi": {
+          "id": "2Rm2X0RisT3C5dpm",
+          "name": "MCP Apify"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -720,
+        -1080
+      ],
+      "id": "aa8d4347-c695-4601-9ce8-64e0185ddaef",
+      "name": "LLM",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZOpj5TOQEHDUyvZz",
+          "name": "OpenAi account 2 (AW)"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -520,
+        -1080
+      ],
+      "id": "7ddce741-5b8b-49a9-b612-1cbfdb5b51c4",
+      "name": "Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -400,
+        -1380
+      ],
+      "id": "e7ad8dbf-6348-4fb2-845d-cbabc6450ccb",
+      "name": "MCP Calendar Agent"
+    },
+    {
+      "parameters": {
+        "content": "[![The AI Automators](https://www.theaiautomators.com/wp-content/uploads/2025/03/gray-logo.png)](https://www.theaiautomators.com/)",
+        "height": 120,
+        "width": 260,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -1560
+      ],
+      "id": "1377c1dc-3cfb-4211-ae04-8d66355ec540",
+      "name": "Sticky Note8"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "MCP Search Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Tools for Brave Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Search Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Tool for Brave Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Search Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        []
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "MCP Search Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "MCP Scraping Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Tools for Firecrawl": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Scraping Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Tool for Firecrawl": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Scraping Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "MCP Puppeteer Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Tools for Puppeteer": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Puppeteer Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Tool for Puppeteer": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Puppeteer Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Resources for Puppeteer": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Puppeteer Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Apify MCP Server": {
+      "main": [
+        []
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Apify API Key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "MCP Apify Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "MCP Apify Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Tools for Apify": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Apify Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Tool for Apify": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Apify Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apify API Key": {
+      "main": [
+        [
+          {
+            "node": "Start Apify MCP Server",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "MCP Scraping Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "MCP Puppeteer Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory4": {
+      "ai_memory": [
+        [
+          {
+            "node": "MCP Github Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "MCP Github Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Tools for Github": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Github Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Resources for Github": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Github Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Tools for Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Tool for Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Prompts for Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Resources for Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Resource": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "MCP Calendar Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "MCP Calendar Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bcb250b4-80c8-43d0-bb54-5c92a9a50965",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b5d1ea132a4e071e6288b3143f31284b91560858bdef3f0c88a49f587fc91a29"
+  },
+  "id": "OnnN4BYvCg8WPgLS",
+  "tags": []
+}
