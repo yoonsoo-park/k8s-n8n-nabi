@@ -19,6 +19,7 @@ const server = new FastMCP({
 });
 
 // Override the addTool method to also store tools in our registry
+// this is used to verify that the tool is added to the server in the logs
 const originalAddTool = server.addTool.bind(server);
 server.addTool = (tool) => {
   // Store the tool in our registry
@@ -40,8 +41,9 @@ server.on("disconnect", (event) => {
   console.log(`Client disconnected`);
 });
 
-// Start of HTTP server setup
+// 💀💀 Start of HTTP server setup
 // Simple HTTP server for JSON-RPC
+// this is used for testing the MCP server via the /api endpoint
 function setupHttpServer() {
   const httpServer = http.createServer(async (req, res) => {
     // Enable CORS
@@ -246,7 +248,7 @@ function setupHttpServer() {
 
   return httpServer;
 }
-// End of HTTP server setup
+// End of HTTP server setup 💀💀
 
 // Determine environment
 const isProd = process.env.NODE_ENV === "production";
@@ -337,7 +339,7 @@ const loadTools = async () => {
       `Found ${toolFiles.length} tool files: ${toolFiles.join(", ")}`
     );
 
-    // Count tools loaded in a more reliable way by keeping track of successful additions
+    // Count tools loaded in a more reliable way by keeping track of successful addition. it is a bit barbaric but it is ok for now.
     let successfullyLoadedTools = 0;
 
     // Import each tool
