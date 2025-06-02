@@ -1,14 +1,14 @@
-# n8n-nabi: n8n with MCP Integration on AWS EKS
+# n8n-automation: n8n Workflow Platform on AWS EKS
 
-This project provides a complete solution for hosting n8n with Model Context Protocol (MCP) integration on Amazon Web Services (AWS) using Elastic Kubernetes Service (EKS). The setup includes n8n, an MCP server, PostgreSQL, and all necessary configurations for a production environment.
+This project provides a complete solution for hosting n8n workflow automation platform on Amazon Web Services (AWS) using Elastic Kubernetes Service (EKS). The setup includes n8n, PostgreSQL, Redis, and all necessary configurations for a production environment.
 
 ## Architecture Overview
 
 The architecture consists of:
 
 1. **n8n**: Workflow automation platform with AI capabilities
-2. **MCP Server**: Provides standardized tools for AI agents
-3. **PostgreSQL**: Database backend for n8n
+2. **PostgreSQL**: Database backend for n8n
+3. **Redis**: Queue management for n8n workers
 4. **AWS EKS**: Kubernetes orchestration for managing the containers
 
 ## Prerequisites
@@ -21,7 +21,7 @@ Before starting, ensure you have the following:
    - [eksctl](https://eksctl.io/)
    - [kubectl](https://kubernetes.io/docs/tasks/tools/)
    - [git](https://git-scm.com/)
-   - [Docker](https://www.docker.com/) (for building MCP server image)
+   - [Docker](https://www.docker.com/) (for container management)
 
 ## Quick Start
 
@@ -41,20 +41,10 @@ Enter your AWS credentials:
 ### 2. Create EKS Cluster
 
 ```bash
-eksctl create cluster --name n8n-mcp --region your-aws-region
+eksctl create cluster --name n8n-automation --region your-aws-region
 ```
 
-### 3. Build and Push MCP Server Docker Image
-
-```bash
-cd mcp-server
-docker build -t your-registry/mcp-server:latest .
-docker push your-registry/mcp-server:latest
-```
-
-Update the image name in `k8s/base/mcp-server.yaml` to match your registry URL.
-
-### 4. Deploy to Kubernetes
+### 3. Deploy to Kubernetes
 
 Apply configurations in this order:
 
@@ -64,11 +54,10 @@ kubectl apply -f k8s/secrets/
 kubectl apply -f k8s/base/postgres-pvc.yaml
 kubectl apply -f k8s/base/n8n-pvc.yaml
 kubectl apply -f k8s/base/postgres.yaml
-kubectl apply -f k8s/base/mcp-server.yaml
 kubectl apply -f k8s/base/n8n.yaml
 ```
 
-### 5. Access n8n
+### 4. Access n8n
 
 Get the Load Balancer URL:
 
@@ -78,20 +67,14 @@ kubectl get svc -n n8n
 
 Create a DNS record pointing to the Load Balancer URL.
 
-## MCP Integration
+## Workflow Automation
 
-This project includes the Model Context Protocol (MCP) server that provides standardized tools for AI agents in n8n. The integration works as follows:
+This project provides a robust n8n workflow automation platform with the following capabilities:
 
-1. MCP server runs as a separate container providing tool endpoints
-2. n8n connects to the MCP server using the n8n-nodes-mcp community node
-3. AI Agent node in n8n can use tools provided by the MCP server
-
-### Available MCP Tools
-
-The MCP server includes the following tools:
-
-- HTTP Request Tool: Make HTTP requests to external APIs
-- Add more tools by creating additional JavaScript files in `mcp-server/tools/`
+1. **Visual Workflow Builder**: Create complex automation workflows using n8n's intuitive interface
+2. **Database Integration**: Persistent storage of workflows and execution history via PostgreSQL
+3. **Queue Management**: Redis-powered queue system for handling concurrent workflow executions
+4. **Worker Scaling**: Multiple n8n worker instances for improved performance
 
 ## Local Development
 
@@ -132,7 +115,7 @@ To delete all resources:
 ```bash
 kubectl delete -f k8s/base/
 kubectl delete -f k8s/secrets/
-eksctl delete cluster --name n8n-mcp --region your-aws-region
+eksctl delete cluster --name n8n-automation --region your-aws-region
 ```
 
 ## Security Considerations

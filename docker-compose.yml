@@ -8,7 +8,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - mcp-n8n-network
+      - n8n-network
     restart: always
 
   redis:
@@ -16,7 +16,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - mcp-n8n-network
+      - n8n-network
     restart: always
 
   n8n:
@@ -46,7 +46,7 @@ services:
       - postgres
       - redis
     networks:
-      - mcp-n8n-network
+      - n8n-network
     restart: always
 
   n8n-worker:
@@ -72,31 +72,11 @@ services:
       - redis
       - n8n
     networks:
-      - mcp-n8n-network
-    restart: always
-
-  mcp-server:
-    build:
-      context: ./mcp-server
-    ports:
-      - "1991:1991"
-      - "1992:1992"
-    environment:
-      - MCP_SERVER_PORT=1991
-      - MCP_SERVER_LOG_LEVEL=debug
-      - N8N_BASE_URL=http://n8n:5678/api/v1
-      - N8N_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmY2MwOTI5Zi1kNjQ2LTRkMTMtODgzZi1lNjY3NTk3MDA3NWYiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzQyMTc1Njk2fQ.E39KyK7AyKJkl9eNlSHxHVSQ-K5UiFyw9RH_DI1KDbU
-      - NODE_ENV=production
-      - MCP_TRANSPORT_TYPE=sse
-      - MCP_SSE_ENABLED=true
-    depends_on:
-      - n8n
-    networks:
-      - mcp-n8n-network
+      - n8n-network
     restart: always
 
 networks:
-  mcp-n8n-network:
+  n8n-network:
     driver: bridge
 
 volumes:

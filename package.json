@@ -1,15 +1,14 @@
 {
   "name": "n8n-nabi",
   "version": "1.0.0",
-  "description": "Test MCP server for n8n integration",
-  "main": "test-mcp-server.js",
+  "description": "n8n workflow automation platform",
+  "main": "index.js",
   "scripts": {
-    "test": "node test-mcp-server.js"
+    "test": "echo 'No tests specified'"
   },
   "dependencies": {
     "axios": "^1.8.3",
     "eventsource": "^3.0.5",
-    "fastmcp": "^1.20.5",
     "uuid": "^11.1.0"
   },
   "engines": {
