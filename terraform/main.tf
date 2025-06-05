@@ -71,3 +71,25 @@ module "karpenter" {
 
   depends_on = [module.eks] # Ensure EKS cluster is ready
 }
+
+# --- Instantiate ArgoCD Module ---
+module "argocd" {
+  source = "./modules/argocd"
+
+  project_name = var.project_name
+  environment  = var.environment
+  cluster_name = module.eks.cluster_name # From EKS module output
+  aws_region   = var.aws_region
+
+  # argocd_namespace uses default "argocd"
+  # argocd_helm_chart_version uses default in module
+  # argocd_server_service_type uses default "LoadBalancer"
+
+  # Example of overriding a value:
+  # argocd_server_ingress_enabled = true
+  # argocd_server_ingress_hosts   = ["argo.mycompany.com"]
+
+  tags = var.tags
+
+  depends_on = [module.eks, module.karpenter] # Ensure EKS and Karpenter (if it adds CRDs Argo might use) are ready
+}
