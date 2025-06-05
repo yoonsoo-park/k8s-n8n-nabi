@@ -47,3 +47,27 @@ module "eks" {
 
   depends_on = [module.vpc] # Ensure VPC is created before EKS
 }
+
+# --- Instantiate Karpenter Module ---
+module "karpenter" {
+  source = "./modules/karpenter"
+
+  project_name    = var.project_name
+  environment     = var.environment
+  cluster_name    = module.eks.cluster_name # Output from EKS module
+  aws_region      = var.aws_region
+
+  eks_oidc_provider_arn             = module.eks.cluster_oidc_provider_arn # Output from EKS module
+  eks_oidc_provider_url_without_https = replace(module.eks.cluster_oidc_issuer_url, "https://", "") # Derive from EKS module output
+  eks_cluster_endpoint              = module.eks.cluster_endpoint # Output from EKS module
+
+  # karpenter_namespace and karpenter_service_account_name use defaults in the module
+
+  # Spot interruption handling - disabled by default
+  # enable_spot_interruption_handling = true
+  # karpenter_sqs_queue_name          = "your-karpenter-spot-queue-name" # Create this queue separately
+
+  tags = var.tags
+
+  depends_on = [module.eks] # Ensure EKS cluster is ready
+}
