@@ -93,3 +93,37 @@ module "argocd" {
 
   depends_on = [module.eks, module.karpenter] # Ensure EKS and Karpenter (if it adds CRDs Argo might use) are ready
 }
+
+# --- Instantiate RDS for a Sample Tenant: tenant-alpha ---
+module "rds_tenant_alpha" {
+  source = "./modules/rds-tenant-instance"
+
+  tenant_id            = "alpha" # Unique identifier for this tenant's DB
+  environment          = var.environment
+  project_name         = var.project_name
+
+  vpc_id               = module.vpc.vpc_id
+  private_subnet_ids   = module.vpc.private_subnet_ids # RDS should be in private subnets
+
+  # Allow access from the EKS cluster's main security group.
+  # For more fine-grained access, create a specific SG for n8n pods and use that.
+  allowed_source_security_group_ids = [module.eks.cluster_security_group_id]
+
+  # RDS specific configurations (can be customized per tenant)
+  rds_instance_class     = "db.t3.small" # Example size for a small tenant
+  rds_allocated_storage  = 20
+  rds_db_name            = "n8ntenantalpha"
+  rds_master_username    = "n8nalphaadmin"
+  # rds_master_password_existing_secret_arn = "arn:aws:secretsmanager:..." # Optionally use an existing secret
+  rds_master_password_generate_new = true # Generate a new password and store in Secrets Manager
+
+  rds_multi_az           = var.environment == "prod" ? true : false # Example: Multi-AZ for prod
+  rds_backup_retention_period = 7
+  rds_deletion_protection = var.environment == "prod" ? true : false # Example: Deletion protection for prod
+
+  tags = merge(var.tags, {
+    Tenant = "tenant-alpha" # Specific tag for this tenant's DB
+  })
+
+  depends_on = [module.eks] # Ensure EKS cluster (and its SGs) are ready
+}
