@@ -1,0 +1,61 @@
+n8n tenant stack has been deployed.
+
+1. Get the n8n URL:
+{{- if .Values.n8n.main.ingress.enabled }}
+  {{- range .Values.n8n.main.ingress.hosts }}
+  http{{ if $.Values.n8n.main.ingress.tls }}s{{ end }}://{{ .host }}{{ .path }}
+  {{- end }}
+{{- else if eq .Values.n8n.main.service.type "LoadBalancer" }}
+  export SERVICE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].port}" services {{ include "n8n-tenant-stack.fullname" . }}-main)
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "n8n-tenant-stack.fullname" . }}-main -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  export N8N_URL=http://\$SERVICE_IP:\$SERVICE_PORT
+  echo "n8n URL: \$N8N_URL"
+  echo "Note: It might take a few minutes for the LoadBalancer IP to be available."
+{{- else }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "n8n-tenant-stack.name" . }}-main,app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  echo "Access n8n by port-forwarding to the main pod:"
+  echo "  kubectl port-forward --namespace {{ .Release.Namespace }} \$POD_NAME 5678:5678"
+  echo "Then open http://localhost:5678 in your browser."
+{{- end }}
+
+2. n8n Encryption Key:
+   The n8n encryption key is critical for securing credentials.
+   {{- if .Values.n8n.encryptionKeySecret.create }}
+     {{- if eq .Values.n8n.encryptionKeySecret.value "defaultNotSoSecretEncryptionKeyChangeMe" }}
+   WARNING: A default N8N_ENCRYPTION_KEY was used. This is insecure.
+   You MUST override `n8n.encryptionKeySecret.value` or use `n8n.encryptionKeySecret.useExistingSecret`.
+     {{- end }}
+   It is stored in secret: {{ include "n8n-tenant-stack.n8nEncryptionKey.secretName" . }}
+   Key: {{ .Values.n8n.encryptionKeySecret.keyName }}
+   {{- else }}
+   It is expected to be in an existing secret named by `n8n.encryptionKeySecret.name` or other external mechanism.
+   {{- end }}
+
+3. PostgreSQL Credentials:
+   {{- if .Values.postgresql.enabled }}
+     {{- if not .Values.postgresql.auth.existingSecret }}
+   PostgreSQL admin password stored in secret: {{ include "n8n-tenant-stack.postgresql.secretName" . }} (key: {{ .Values.postgresql.auth.secretKeys.adminPasswordKey }})
+   PostgreSQL user '{{ .Values.postgresql.auth.username }}' password stored in secret: {{ include "n8n-tenant-stack.postgresql.secretName" . }} (key: {{ .Values.postgresql.auth.secretKeys.userPasswordKey }})
+     {{- else }}
+   PostgreSQL is using existing secret: {{ .Values.postgresql.auth.existingSecret }}
+     {{- end }}
+   Service name: {{ include "n8n-tenant-stack.postgresql.fullname" . }}
+   Port: 5432
+   {{- else }}
+   Bundled PostgreSQL is disabled. Ensure n8n is configured to connect to your external PostgreSQL.
+   {{- end }}
+
+4. Redis Credentials & Access:
+   {{- if .Values.redis.enabled }}
+     {{- if and .Values.redis.auth.enabled (not .Values.redis.auth.existingSecret) }}
+   Redis password stored in secret: {{ include "n8n-tenant-stack.redis.secretName" . }} (key: {{ .Values.redis.auth.secretKey }})
+     {{- else if .Values.redis.auth.enabled .Values.redis.auth.existingSecret }}
+   Redis is using existing secret: {{ .Values.redis.auth.existingSecret }}
+     {{- else if not .Values.redis.auth.enabled }}
+   Redis authentication is disabled.
+     {{- end }}
+   Service name: {{ include "n8n-tenant-stack.redis.fullname" . }}
+   Port: 6379
+   {{- else }}
+   Bundled Redis is disabled. Ensure n8n (for queue mode) is configured to connect to your external Redis.
+   {{- end }}

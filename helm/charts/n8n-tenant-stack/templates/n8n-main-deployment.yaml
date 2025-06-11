@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment # Using Deployment for n8n main, can be StatefulSet if strict identity is needed
+metadata:
+  name: {{ include "n8n-tenant-stack.fullname" . }}-main
+  labels:
+    {{- include "n8n-tenant-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: n8n-main
+spec:
+  replicas: {{ .Values.n8n.main.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "n8n-tenant-stack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: n8n-main
+  template:
+    metadata:
+      labels:
+        {{- include "n8n-tenant-stack.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: n8n-main
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "n8n-tenant-stack.fullname" . }}-main # Assuming a SA per component or chart-wide
+      containers:
+        - name: n8n-main
+          image: "{{ .Values.n8n.image.repository }}:{{ .Values.n8n.image.tag }}"
+          imagePullPolicy: {{ .Values.n8n.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.n8n.main.service.port }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "n8n-tenant-stack.fullname" . }}-main-config
+          env:
+            - name: N8N_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "n8n-tenant-stack.n8nEncryptionKey.secretName" . }}
+                  key: {{ .Values.n8n.encryptionKeySecret.keyName }}
+            {{- if .Values.postgresql.enabled }}
+            - name: DB_POSTGRESDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "n8n-tenant-stack.postgresql.secretName" . }}
+                  key: {{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
+            {{- else if .Values.n8n.config.dbPasswordSecretName }} # For external DB password
+            - name: DB_POSTGRESDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.n8n.config.dbPasswordSecretName }}
+                  key: {{ .Values.n8n.config.dbPasswordSecretKey }}
+            {{- end }}
+            {{- if and (eq .Values.n8n.config.executionsMode "queue") .Values.redis.enabled .Values.redis.auth.enabled }}
+            - name: QUEUE_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "n8n-tenant-stack.redis.secretName" . }}
+                  key: {{ .Values.redis.auth.secretKey }}
+            {{- else if and (eq .Values.n8n.config.executionsMode "queue") .Values.n8n.config.queueRedisPasswordSecretName }} # For external Redis password
+            - name: QUEUE_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.n8n.config.queueRedisPasswordSecretName }}
+                  key: {{ .Values.n8n.config.queueRedisPasswordSecretKey }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.n8n.main.resources | nindent 12 }}
+          {{- if .Values.n8n.main.persistence.enabled }}
+          volumeMounts:
+            - name: n8n-data
+              mountPath: /home/node/.n8n
+          {{- end }}
+      {{- if .Values.n8n.main.persistence.enabled }}
+      volumes:
+        - name: n8n-data
+          persistentVolumeClaim:
+            claimName: {{ include "n8n-tenant-stack.fullname" . }}-main-pvc
+      {{- end }}

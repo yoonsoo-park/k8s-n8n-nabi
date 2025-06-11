@@ -1,0 +1,83 @@
+{{- if .Values.redis.enabled }}
+apiVersion: apps/v1
+kind: Deployment # Using Deployment for Redis, can be StatefulSet for more stable identity if needed
+metadata:
+  name: {{ include "n8n-tenant-stack.redis.fullname" . }}
+  labels:
+    {{- include "n8n-tenant-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+spec:
+  replicas: 1 # For simple cache, 1 is often enough. HA Redis is more complex.
+  selector:
+    matchLabels:
+      {{- include "n8n-tenant-stack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: redis
+  template:
+    metadata:
+      labels:
+        {{- include "n8n-tenant-stack.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: redis
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # serviceAccountName: {{ include "n8n-tenant-stack.fullname" . }}-redis (if needed)
+      containers:
+        - name: redis
+          image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
+          imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+          args:
+            {{- if .Values.redis.auth.enabled }}
+            - "--requirepass"
+            - "$(REDIS_PASSWORD)"
+            {{- end }}
+            # Add other Redis args as needed
+          env:
+            {{- if .Values.redis.auth.enabled }}
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "n8n-tenant-stack.redis.secretName" . }}
+                  key: {{ .Values.redis.auth.secretKey }}
+            {{- end }}
+          ports:
+            - name: tcp-redis
+              containerPort: 6379
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: tcp-redis
+            # exec:
+            #   command:
+            #     - redis-cli
+            #     - ping
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 1
+            failureThreshold: 5
+          readinessProbe:
+            tcpSocket:
+              port: tcp-redis
+            # exec:
+            #   command:
+            #     - redis-cli
+            #     - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 1
+            failureThreshold: 5
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+          {{- if .Values.redis.persistence.enabled }}
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          {{- end }}
+      {{- if .Values.redis.persistence.enabled }}
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: {{ include "n8n-tenant-stack.redis.fullname" . }}-pvc
+      {{- end }}
+{{- end }}

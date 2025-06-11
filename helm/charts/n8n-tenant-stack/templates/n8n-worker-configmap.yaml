@@ -1,0 +1,43 @@
+{{- if eq .Values.n8n.config.executionsMode "queue" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "n8n-tenant-stack.fullname" . }}-worker-config
+  labels:
+    {{- include "n8n-tenant-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: n8n-worker
+data:
+  EXECUTIONS_MODE: "queue"
+  N8N_WORKER_CONCURRENCY: {{ .Values.n8n.worker.concurrency | quote }}
+  TZ: "America/New_York" # Example, consider making this a value
+
+  # Database Configuration (same as main)
+  DB_TYPE: {{ .Values.n8n.config.dbType | quote }}
+  {{- if .Values.postgresql.enabled }}
+  DB_POSTGRESDB_HOST: {{ include "n8n-tenant-stack.postgresql.fullname" . | quote }}
+  DB_POSTGRESDB_PORT: {{ .Values.n8n.config.dbPort | quote }}
+  DB_POSTGRESDB_DATABASE: {{ .Values.postgresql.auth.database | quote }}
+  DB_POSTGRESDB_USER: {{ .Values.postgresql.auth.username | quote }}
+  DB_POSTGRESDB_SCHEMA: {{ .Values.n8n.config.dbSchema | quote }}
+  DB_POSTGRESDB_SSL_ENABLED: {{ .Values.n8n.config.dbSslEnabled | quote }}
+  {{- else }}
+  DB_POSTGRESDB_HOST: {{ .Values.n8n.config.dbHost | quote }}
+  DB_POSTGRESDB_PORT: {{ .Values.n8n.config.dbPort | quote }}
+  DB_POSTGRESDB_DATABASE: {{ .Values.n8n.config.dbName | quote }}
+  DB_POSTGRESDB_USER: {{ .Values.n8n.config.dbUser | quote }}
+  DB_POSTGRESDB_SCHEMA: {{ .Values.n8n.config.dbSchema | quote }}
+  DB_POSTGRESDB_SSL_ENABLED: {{ .Values.n8n.config.dbSslEnabled | quote }}
+  {{- end }}
+
+  # Queue Configuration
+  {{- if .Values.redis.enabled }}
+  QUEUE_REDIS_HOST: {{ include "n8n-tenant-stack.redis.fullname" . | quote }}
+  QUEUE_REDIS_PORT: {{ .Values.n8n.config.queueRedisPort | quote }}
+  QUEUE_REDIS_DB: {{ .Values.n8n.config.queueRedisDb | quote }}
+  {{- else }}
+  QUEUE_REDIS_HOST: {{ .Values.n8n.config.queueRedisHost | quote }}
+  QUEUE_REDIS_PORT: {{ .Values.n8n.config.queueRedisPort | quote }}
+  QUEUE_REDIS_DB: {{ .Values.n8n.config.queueRedisDb | quote }}
+  {{- end }}
+  # Add other n8n specific environment variables for workers if needed
+{{- end }}

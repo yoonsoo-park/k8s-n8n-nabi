@@ -1,0 +1,7 @@
+apiVersion: v2
+name: n8n-tenant-stack
+description: A Helm chart to deploy a full n8n tenant stack (n8n main/worker, PostgreSQL, Redis).
+type: application
+version: 0.1.0
+appVersion: "1.38.2" # Specify a target n8n version
+# No dependencies for now, as we are creating custom templates for sub-components.

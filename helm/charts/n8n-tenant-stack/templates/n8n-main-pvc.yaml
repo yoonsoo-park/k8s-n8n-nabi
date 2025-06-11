@@ -1,0 +1,18 @@
+{{- if .Values.n8n.main.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "n8n-tenant-stack.fullname" . }}-main-pvc
+  labels:
+    {{- include "n8n-tenant-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: n8n-main
+spec:
+  accessModes:
+    - ReadWriteOnce # Suitable for single replica n8n main or StatefulSet
+  resources:
+    requests:
+      storage: {{ .Values.n8n.main.persistence.size }}
+  {{- if .Values.n8n.main.persistence.storageClass }}
+  storageClassName: {{ .Values.n8n.main.persistence.storageClass }}
+  {{- end }}
+{{- end }}

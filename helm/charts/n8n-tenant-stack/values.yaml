@@ -1,0 +1,260 @@
+# Default values for n8n-tenant-stack.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+fullnameOverride: ""
+nameOverride: ""
+
+global:
+  # namespace: "" # If set, the chart can attempt to use/create it. Otherwise, .Release.Namespace is used.
+  # Consider if chart should create namespace or assume it exists.
+  # For tenant isolation, namespace is often created externally or by a parent chart/ArgoCD app.
+  imagePullSecrets: []
+  # Example: common annotations or labels for all resources created by this chart
+  # commonAnnotations:
+  #   billingCode: "example-tenant-123"
+  # commonLabels:
+  #   owner: "platform-team"
+
+  # Central place for critical shared secrets, or references to them
+  # These would ideally be populated by an external secrets manager via ArgoCD Vault Plugin, ESO, etc.
+  secrets:
+    # N8N_ENCRYPTION_KEY: This is critical.
+    # Option 1: Provide the value directly (less secure, for dev/test or if templated securely)
+    # n8nEncryptionKeyValue: "!!VERY_SECRET_ENCRYPTION_KEY_CHANGE_ME!!"
+    # Option 2: Reference an existing secret created outside this chart
+    n8nEncryptionKeyExistingSecret: "" # Name of the existing secret
+    n8nEncryptionKeyExistingSecretKey: "N8N_ENCRYPTION_KEY" # Key within the existing secret
+
+    # PostgreSQL password (if bundled postgres is used)
+    # postgresqlPasswordValue: "!!POSTGRES_PASSWORD_CHANGE_ME!!"
+    postgresqlPasswordExistingSecret: "" # Name of existing secret for postgres user password
+    postgresqlPasswordExistingSecretKey: "password" # Key for user password
+
+    # Redis password (if bundled redis is used and auth is enabled)
+    # redisPasswordValue: "!!REDIS_PASSWORD_CHANGE_ME!!"
+    redisPasswordExistingSecret: "" # Name of existing secret for redis password
+    redisPasswordExistingSecretKey: "password"
+
+n8n:
+  image:
+    repository: docker.n8n.io/n8nio/n8n
+    tag: "1.38.2" # Specify default n8n version
+    pullPolicy: IfNotPresent
+
+  # General n8n configuration, applied to main, worker, and webhook pods via a shared ConfigMap
+  # or individual ConfigMaps if settings need to differ significantly.
+  config:
+    # Generic settings
+    nodeEnv: "production"
+    genericTimezone: "UTC" # e.g., "Europe/Berlin"
+    loggingLevel: "info" # debug, verbose, info, warn, error
+    webhookUrl: "" # e.g., "https://n8n.example.com" - Needs to be the public URL for webhooks
+                   # Can be templated: "https://{{ .Values.n8n.main.ingress.hosts[0].host }}"
+
+    # Database (PostgreSQL)
+    dbType: "postgresdb"
+    dbHost: "" # Auto-filled by default: {{ include "n8n-tenant-stack.postgresql.fullname" . }}
+    dbPort: 5432
+    dbUser: "n8n"
+    dbPasswordSecretName: "" # Auto-filled by default: {{ include "n8n-tenant-stack.postgresql.secretName" . }}
+    dbPasswordSecretKey: "postgresql-password" # Key for the n8n user password in the secret
+    dbName: "n8n"
+    dbSchema: "public"
+    dbSslEnabled: false
+    # dbSslCa: "" # Base64 encoded CA cert or path to mounted cert
+    # dbSslKey: "" # Base64 encoded client key or path
+    # dbSslCert: "" # Base64 encoded client cert or path
+    # dbSslRejectUnauthorized: true
+
+    # Queue Mode (Redis)
+    executionsMode: "queue" # "main" or "queue"
+    queueRedisHost: "" # Auto-filled by default: {{ include "n8n-tenant-stack.redis.fullname" . }}
+    queueRedisPort: 6379
+    queueRedisPasswordSecretName: "" # Auto-filled by default: {{ include "n8n-tenant-stack.redis.secretName" . }}
+    queueRedisPasswordSecretKey: "redis-password"
+    queueRedisDb: 0
+    # queueBullRedisTimeoutThreshold: 10000 # ms
+    # n8nGracefulShutdownTimeout: 30 # seconds (for workers)
+
+    # Other important n8n env vars can be added here or via extraEnv
+    # N8N_DISABLE_PRODUCTION_WEBHOOKS_ON_MAIN: false (if using dedicated webhook processors)
+    # N8N_USER_FOLDER: /home/node/.n8n (default)
+
+  # Settings for the main n8n process (handles UI, API, triggers)
+  main:
+    replicaCount: 1
+    # command: ["n8n"] # Default command
+    resources: {}
+      # requests:
+      #   cpu: "200m"
+      #   memory: "512Mi"
+      # limits:
+      #   cpu: "1"
+      #   memory: "1Gi"
+    podAnnotations: {}
+    podLabels: {}
+    serviceAccount:
+      create: true
+      name: "" # Defaults to fullname
+      annotations: {}
+    service:
+      type: ClusterIP # Change to LoadBalancer for direct exposure, or use Ingress
+      port: 5678
+      # nodePort:
+      annotations: {}
+    ingress:
+      enabled: false
+      className: "" # e.g., "nginx", "alb"
+      annotations: {}
+        # kubernetes.io/ingress.class: nginx
+        # kubernetes.io/tls-acme: "true"
+      hosts:
+        - host: n8n.example.com # Replace with your desired hostname
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+      tls: []
+      #  - secretName: n8n-tls
+      #    hosts:
+      #      - n8n.example.com
+    persistence: # For /home/node/.n8n (user files, SQLite if not external DB, etc.)
+      enabled: true
+      # existingClaim: ""
+      storageClass: "" # Use default if empty, or specify one
+      accessMode: ReadWriteOnce
+      size: 5Gi
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: http
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: http
+      initialDelaySeconds: 5
+      periodSeconds: 5
+    extraEnv: []
+    #  - name: MY_CUSTOM_ENV_VAR
+    #    value: "my_value"
+
+  # Settings for n8n worker processes
+  worker:
+    enabled: true # Ensure this is true if executionsMode is 'queue'
+    replicaCount: 2
+    # command: ["n8n", "worker"] # Default command
+    concurrency: 10 # N8N_WORKER_CONCURRENCY
+    resources: {}
+      # requests:
+      #   cpu: "200m"
+      #   memory: "512Mi"
+      # limits:
+      #   cpu: "1"
+      #   memory: "1Gi"
+    podAnnotations: {}
+    podLabels: {}
+    serviceAccount:
+      create: true # Workers might not need a distinct SA unless specific IRSA for workers
+      name: "" # Defaults to fullname-worker
+      annotations: {}
+    livenessProbe: # Workers might have different health endpoint or none needed
+      exec:
+        command: ["node", "packages/cli/bin/n8n", "healthz:checkProcess", "workerIsActive"]
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    readinessProbe:
+      exec:
+        command: ["node", "packages/cli/bin/n8n", "healthz:checkProcess", "workerIsActive"]
+      initialDelaySeconds: 5
+      periodSeconds: 5
+    extraEnv: []
+    # N8N_GRACEFUL_SHUTDOWN_TIMEOUT: 30 (already covered by queueRedisGracefulShutdownTimeout)
+
+  # Settings for dedicated n8n webhook processors (optional)
+  webhook:
+    enabled: false # Set to true to deploy dedicated webhook processors
+    replicaCount: 1
+    # command: ["n8n", "webhook"] # Default command
+    # resources: {}
+    # ... (similar config to main/worker for probes, SAs, etc.)
+    # Ensure N8N_DISABLE_PRODUCTION_MAIN_PROCESS is true on main if these are used exclusively for webhooks.
+
+# Configuration for the bundled PostgreSQL subchart (if enabled)
+postgresql:
+  enabled: true # Set to false to use an external PostgreSQL
+  image:
+    repository: postgres
+    tag: "15.4-alpine" # Specify version
+    pullPolicy: IfNotPresent
+
+  auth:
+    # If existingSecret is set, username/database/password here are ignored for secret creation.
+    # However, n8n config (n8n.config.dbUser, n8n.config.dbName) will still use its own values for connection.
+    # Ensure consistency or that the existingSecret contains keys matching n8n.config.dbUser.
+    existingSecret: "" # Name of an existing k8s secret for PostgreSQL credentials
+    # If existingSecret is not provided, a new secret will be created.
+    # The username and database for the new secret will be taken from n8n.config.dbUser and n8n.config.dbName.
+    # A random password will be generated if 'password' is empty or not provided.
+    password: "" # Set a specific password, or leave empty for auto-generation.
+                 # This is only used if existingSecret is not set.
+    # Keys within the secret (whether existing or created)
+    secretKeys:
+      userPasswordKey: "password" # Key for the n8n user's password
+      # postgresPasswordKey: "postgres-password" # Key for the postgres superuser password if generated by chart
+
+  primary: # Settings for the primary PostgreSQL instance
+    persistence:
+      enabled: true
+      # existingClaim: ""
+      storageClass: "" # Use default if empty
+      accessMode: ReadWriteOnce
+      size: 10Gi
+    resources: {}
+      # requests:
+      #   cpu: "100m"
+      #   memory: "256Mi"
+      # limits:
+      #   cpu: "500m"
+      #   memory: "512Mi"
+    service:
+      ports:
+        tcp: 5432
+
+# Configuration for the bundled Redis subchart (if enabled)
+redis:
+  enabled: true # Set to false to use an external Redis
+  image:
+    repository: redis
+    tag: "7.2-alpine" # Specify version
+    pullPolicy: IfNotPresent
+
+  auth:
+    enabled: false # Enable password authentication for Redis
+    existingSecret: "" # Name of an existing k8s secret for Redis password
+    # If existingSecret is not provided and auth.enabled is true, a new secret will be created.
+    # A random password will be generated if 'password' is empty or not provided.
+    password: ""
+    secretKey: "redis-password"
+
+  master: # Settings for Redis master
+    persistence:
+      enabled: false # Persistence for Redis cache/queue is often optional
+      # existingClaim: ""
+      # storageClass: ""
+      # accessMode: ReadWriteOnce
+      size: 5Gi
+    resources: {}
+      # requests:
+      #   cpu: "100m"
+      #   memory: "128Mi"
+      # limits:
+      #   cpu: "200m"
+      #   memory: "256Mi"
+    service:
+      ports:
+        tcp: 6379
+  # slave: # Configuration for Redis slaves if using a replicated setup
+  #   replicaCount: 0
+  #   ...

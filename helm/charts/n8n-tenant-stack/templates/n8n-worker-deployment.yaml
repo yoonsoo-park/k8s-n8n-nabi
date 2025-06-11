@@ -1,0 +1,73 @@
+{{- if eq .Values.n8n.config.executionsMode "queue" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "n8n-tenant-stack.fullname" . }}-worker
+  labels:
+    {{- include "n8n-tenant-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: n8n-worker
+spec:
+  replicas: {{ .Values.n8n.worker.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "n8n-tenant-stack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: n8n-worker
+  template:
+    metadata:
+      labels:
+        {{- include "n8n-tenant-stack.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: n8n-worker
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "n8n-tenant-stack.fullname" . }}-worker # Assuming a SA per component or chart-wide
+      containers:
+        - name: n8n-worker
+          image: "{{ .Values.n8n.image.repository }}:{{ .Values.n8n.image.tag }}"
+          imagePullPolicy: {{ .Values.n8n.image.pullPolicy }}
+          command: ["n8n", "worker"] # Command for worker process
+          envFrom:
+            - configMapRef:
+                name: {{ include "n8n-tenant-stack.fullname" . }}-worker-config
+          env:
+            - name: N8N_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "n8n-tenant-stack.n8nEncryptionKey.secretName" . }}
+                  key: {{ .Values.n8n.encryptionKeySecret.keyName }}
+            {{- if .Values.postgresql.enabled }}
+            - name: DB_POSTGRESDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "n8n-tenant-stack.postgresql.secretName" . }}
+                  key: {{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
+            {{- else if .Values.n8n.config.dbPasswordSecretName }}
+            - name: DB_POSTGRESDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.n8n.config.dbPasswordSecretName }}
+                  key: {{ .Values.n8n.config.dbPasswordSecretKey }}
+            {{- end }}
+            {{- if .Values.redis.enabled }}
+              {{- if .Values.redis.auth.enabled }}
+            - name: QUEUE_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "n8n-tenant-stack.redis.secretName" . }}
+                  key: {{ .Values.redis.auth.secretKey }}
+              {{- end }}
+            {{- else if .Values.n8n.config.queueRedisPasswordSecretName }} # For external Redis password
+            - name: QUEUE_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.n8n.config.queueRedisPasswordSecretName }}
+                  key: {{ .Values.n8n.config.queueRedisPasswordSecretKey }}
+            {{- end }}
+          # Workers typically don't have liveness/readiness probes directly,
+          # but depend on being able to connect to Redis/DB.
+          # Consider adding simple startup probes or metrics-based probes if available.
+          resources:
+            {{- toYaml .Values.n8n.worker.resources | nindent 12 }}
+{{- end }}
